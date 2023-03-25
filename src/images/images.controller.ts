@@ -7,6 +7,19 @@ import { Readable } from 'stream';
 export class ImagesController {
   constructor(private readonly hitomi: HitomiService) {}
 
+  @Get('/preview/:hash')
+  async getPreview(
+    @Param('hash') hash: string,
+    @Res({ passthrough: true }) res: Response,
+  ): Promise<StreamableFile> {
+    res.set({
+      'Content-Type': 'image/webp',
+    });
+    return new StreamableFile(
+      Readable.from(await this.hitomi.getPreview(hash, 'webpbigtn')),
+    );
+  }
+
   @Get('/avif/:hash')
   async getAvif(
     @Param('hash') hash: string,

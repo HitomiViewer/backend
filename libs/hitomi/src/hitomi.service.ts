@@ -62,7 +62,6 @@ export class HitomiService {
   ) {}
 
   async getIndex(language: HitomiLanguage = 'all', start = 0, end = 25) {
-    console.log('start', start * 4, 'end', end * 4 - 1);
     const res = await firstValueFrom(
       this.httpService.get(`https://ltn.hitomi.la/index-${language}.nozomi`, {
         responseType: 'arraybuffer',
@@ -114,6 +113,42 @@ export class HitomiService {
             ),
           ),
       ) + 'a';
+    return await lastValueFrom(
+      this.httpService
+        .get(`https://${subdomain}.hitomi.la/${path}`, {
+          responseType: 'arraybuffer',
+          headers: {
+            'User-Agent':
+              'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+            Referer: 'https://hitomi.la/',
+          },
+        })
+        .pipe(map((x) => x.data as Buffer)),
+    );
+  }
+
+  async getPreview(
+    hash: string,
+    type: 'avifbigtn' | 'avifsmallbigtn' | 'webpbigtn',
+  ) {
+    const gg = (await this.cache.get('gg')) || (await this.getGG());
+    const path = `${type}/${hash.replace(/^.*(..)(.)$/, '$2/$1/' + hash)}.${
+      { avifbigtn: 'avif', avifsmallbigtn: 'avif', webpbigtn: 'webp' }[type]
+    }`;
+    const subdomain =
+      String.fromCharCode(
+        97 +
+          gg.m(
+            parseInt(
+              /(..)(.)$/
+                .exec(hash)!
+                .splice(1)
+                .reverse()
+                .reduce((a, b) => a + b, ''),
+              16,
+            ),
+          ),
+      ) + 'tn';
     return await lastValueFrom(
       this.httpService
         .get(`https://${subdomain}.hitomi.la/${path}`, {
