@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json.schemastore.org/nest-cli",
+  "collection": "@nestjs/schematics",
+  "sourceRoot": "src",
+  "compilerOptions": {
+    "assets": [
+      "**/*.proto"
+    ],
+    "watchAssets": true,
+    "webpack": true
+  },
+  "projects": {
+    "hitomi": {
+      "type": "library",
+      "root": "libs/hitomi",
+      "entryFile": "index",
+      "sourceRoot": "libs/hitomi/src",
+      "compilerOptions": {
+        "tsConfigPath": "libs/hitomi/tsconfig.lib.json"
+      }
+    }
+  }
+}
