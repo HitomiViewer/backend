@@ -14,6 +14,7 @@ export class AppController {
       throw new HttpException('page must be greater than 0', 400);
     if (language !== 'all' && !HitomiLanguages.includes(language as any))
       throw new HttpException('language is not supported', 400);
+    if (!page) return await this.hitomi.getIndex(language);
     return await this.hitomi.getIndexWithPage(language, page);
   }
 }

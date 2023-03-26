@@ -84,7 +84,23 @@ export class HitomiService {
     @Inject(CACHE_MANAGER) private cache: Cache,
   ) {}
 
-  async getIndex(language: HitomiLanguage = 'all', start = 0, end = 25) {
+  async getIndex(language: HitomiLanguage = 'all') {
+    const res = await firstValueFrom(
+      this.httpService.get(`https://ltn.hitomi.la/index-${language}.nozomi`, {
+        responseType: 'arraybuffer',
+      }),
+    )
+      .then((x) => x.data as Buffer)
+      .then(this.parseIntArray);
+
+    return res;
+  }
+
+  async getIndexWithRange(
+    language: HitomiLanguage = 'all',
+    start = 0,
+    end = 25,
+  ) {
     const res = await firstValueFrom(
       this.httpService.get(`https://ltn.hitomi.la/index-${language}.nozomi`, {
         responseType: 'arraybuffer',
@@ -104,7 +120,11 @@ export class HitomiService {
     page = 1,
     size = 25,
   ) {
-    return await this.getIndex(language, (page - 1) * size, page * size);
+    return await this.getIndexWithRange(
+      language,
+      (page - 1) * size,
+      page * size,
+    );
   }
 
   async getGallery(id: number) {
