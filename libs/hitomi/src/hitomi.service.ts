@@ -214,13 +214,8 @@ export class HitomiService {
         .filter((x) => x)
         .sort((a, b) => a.length - b.length)
         .map((x) => {
-          if (x.length > results.length) {
-            const set = new Set(x);
-            results.filter((c) => !set.has(c));
-          } else {
-            const set = new Set(results);
-            results = x.filter((c) => !set.has(c));
-          }
+          const set = new Set(x);
+          results = results.filter((c) => !set.has(c));
         }),
     );
     await Promise.all(
@@ -231,7 +226,7 @@ export class HitomiService {
         .map((x) => {
           if (x.length > results.length) {
             const set = new Set(x);
-            results.filter((c) => set.has(c));
+            results = results.filter((c) => set.has(c));
           } else {
             const set = new Set(results);
             results = x.filter((c) => set.has(c));
