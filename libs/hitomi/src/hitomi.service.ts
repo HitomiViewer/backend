@@ -196,7 +196,7 @@ export class HitomiService {
     return result;
   }
 
-  async getSearch(query: string, start = 0, end = 25) {
+  async getSearch(query: string) {
     const terms = query
       .split(' ')
       .map((x) => x.replace(/_/g, ' '))
@@ -207,31 +207,34 @@ export class HitomiService {
       (positive.length > 0
         ? await this.getIdsWithQuery(positive.pop()!)
         : await this.getIds('index', 'all')) || [];
-    await Promise.all(negative.map((x) => this.getIdsWithQuery(x))).then((x) =>
+    await Promise.all(
+      negative.map((x) => this.getIdsWithQuery(x).then((x) => x || [])),
+    ).then((x) =>
       x
         .filter((x) => x)
-        .sort((a, b) => a!.length - b!.length)
+        .sort((a, b) => a.length - b.length)
         .map((x) => {
-          if (x!.length > results.length) {
+          if (x.length > results.length) {
             const set = new Set(x);
-            results.filter((c, i) => !set.has(c));
+            results.filter((c) => !set.has(c));
           } else {
             const set = new Set(results);
-            results = x!.filter((c, i) => !set.has(c));
+            results = x.filter((c) => !set.has(c));
           }
         }),
     );
-    await Promise.all(positive.map((x) => this.getIdsWithQuery(x))).then((x) =>
+    await Promise.all(
+      positive.map((x) => this.getIdsWithQuery(x).then((x) => x || [])),
+    ).then((x) =>
       x
-        .filter((x) => x)
-        .sort((a, b) => a!.length - b!.length)
+        .sort((a, b) => a.length - b.length)
         .map((x) => {
-          if (x!.length > results.length) {
+          if (x.length > results.length) {
             const set = new Set(x);
-            results.filter((c, i) => set.has(c));
+            results.filter((c) => set.has(c));
           } else {
             const set = new Set(results);
-            results = x!.filter((c, i) => set.has(c));
+            results = x.filter((c) => set.has(c));
           }
         }),
     );
@@ -239,6 +242,10 @@ export class HitomiService {
   }
 
   private async getIds(tag: string, lang: string, area?: string) {
+    const cached = await this.cache.get<number[]>(
+      `ids:${tag}:${lang}:${area || ''}`,
+    );
+    if (cached) return cached;
     const url = `https://${domain}/${compressed_nozomi_prefix}/${
       area ? `${area}/` : ''
     }${tag}-${lang}.nozomi`;
@@ -250,19 +257,28 @@ export class HitomiService {
       .then((x) => x.data as Buffer)
       .then(this.parseIntArray);
 
+    this.cache.set(`ids:${tag}:${lang}:${area || ''}`, res, ms('1m'));
     return res;
   }
 
   private async getIdsWithQuery(query: string) {
+    const cached = await this.cache.get<number[]>(`ids:${query}`);
+    if (cached) return cached;
     query = query.replace(/_/g, ' ');
     if (query.includes(':')) {
       const [ns, tag] = query.split(':');
       if (['female', 'male'].includes(ns)) {
-        return await this.getIds(query, 'all', 'tag');
+        return await this.getIds(query, 'all', 'tag').then(
+          (x) => (this.cache.set(`ids:${query}`, x, ms('1m')), x),
+        );
       } else if (ns == 'language') {
-        return await this.getIds('index', tag);
+        return await this.getIds('index', tag).then(
+          (x) => (this.cache.set(`ids:${query}`, x, ms('1m')), x),
+        );
       }
-      return await this.getIds(tag, 'all', ns);
+      return await this.getIds(tag, 'all', ns).then(
+        (x) => (this.cache.set(`ids:${query}`, x, ms('1m')), x),
+      );
     }
   }
 
