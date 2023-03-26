@@ -5,6 +5,7 @@ import { HitomiModule } from '@app/hitomi';
 import { APP_INTERCEPTOR } from '@nestjs/core';
 import { DetailModule } from './detail/detail.module';
 import { ImagesModule } from './images/images.module';
+import { SearchModule } from './search/search.module';
 import ms from 'ms';
 
 @Module({
@@ -21,6 +22,7 @@ import ms from 'ms';
     HitomiModule,
     DetailModule,
     ImagesModule,
+    SearchModule,
   ],
   controllers: [AppController],
   providers: [
