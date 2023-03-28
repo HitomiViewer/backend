@@ -58,7 +58,12 @@ export const HitomiLanguages = [
   'japanese',
 ] as const;
 export type HitomiLanguage = typeof HitomiLanguages[number] | 'all';
-
+export const IndexOfField = {
+  global: 'tagindex',
+  galleries: 'galleriesindex',
+  languages: 'languagesindex',
+  nozomiurl: 'nozomiurlindex',
+};
 export interface BNode {
   keys: Buffer[];
   datas: BData[];
@@ -212,7 +217,7 @@ export class HitomiService {
     const node = await this.getNode(field);
     const data = await this.BSearch(field, key, node);
     if (!data) return [];
-    const result = await this.getSuggestionWithData(field, data);
+    const result = await this.getSuggestionWithData(data);
     return result;
   }
 
@@ -296,6 +301,14 @@ export class HitomiService {
         (x) => (this.cache.set(`ids:${query}`, x, ms('1m')), x),
       );
     }
+
+    const field = 'galleries',
+      key = hash(query);
+    const node = await this.getNode(field);
+    const data = await this.BSearch(field, key, node);
+    if (!data) return [];
+    const result = await this.getGalleriesWithData(data);
+    return result;
   }
 
   private parseIntArray(buffer: Buffer) {
@@ -341,12 +354,7 @@ export class HitomiService {
     const cached = await this.cache.get<BNode>(`${field}_${address}`);
     if (cached) return cached;
 
-    const indexDir = {
-      global: 'tagindex',
-      galleries: 'galleriesindex',
-      languages: 'languagesindex',
-      nozomiurl: 'nozomiurlindex',
-    }[field];
+    const indexDir = IndexOfField[field];
     const indexVersion = await this.getIndexVersion(indexDir);
     const url = `https://${domain}/${indexDir}/${field}.${indexVersion}.index`;
 
@@ -397,17 +405,14 @@ export class HitomiService {
 
   /**
    * Get suggestion data with data
-   * @param field global, galleries, languages, nozomiurl
    * @param data data of node
    * @returns suggestion data
    */
-  private async getSuggestionWithData(
-    field: 'global' | 'galleries' | 'languages' | 'nozomiurl',
-    data: BData,
-  ) {
-    const indexDir = 'tagindex';
+  private async getSuggestionWithData(data: BData) {
+    const field = 'global';
+    const indexDir = IndexOfField[field];
     const indexVersion = await this.getIndexVersion(indexDir);
-    const url = `https://${domain}/tagindex/${field}.${indexVersion}.data`;
+    const url = `https://${domain}/${indexDir}/${field}.${indexVersion}.data`;
     const { offset, length } = data;
     if (length > 10000 || length <= 0)
       throw new HttpException(
@@ -471,6 +476,63 @@ export class HitomiService {
     )
       .then((x) => x.data as Buffer)
       .then(decodeSuggestion);
+
+    return res;
+  }
+
+  /**
+   * Get galleries data with data
+   * @param data data of node
+   */
+  private async getGalleriesWithData(data: BData) {
+    const field = 'galleries';
+    const indexDir = IndexOfField[field];
+    const indexVersion = await this.getIndexVersion(indexDir);
+    const url = `https://${domain}/${indexDir}/${field}.${indexVersion}.data`;
+    const { offset, length } = data;
+    if (length > 100000000 || length <= 0)
+      throw new HttpException(
+        `length ${length} is too big or too small`,
+        HttpStatus.BAD_REQUEST,
+      );
+
+    async function decode(data: Buffer) {
+      let pos = 0;
+      const galleryids = [];
+      const number_of_galleryids = data.readInt32BE(pos);
+      pos += 4;
+
+      const expected_length = 4 + 4 * number_of_galleryids;
+      if (number_of_galleryids > 10000000 || number_of_galleryids <= 0)
+        throw new HttpException(
+          `number of galleryids ${number_of_galleryids} is too big or too small`,
+          HttpStatus.BAD_REQUEST,
+        );
+
+      if (data.byteLength !== expected_length)
+        throw new HttpException(
+          `length of data ${data.byteLength} is not expected ${expected_length}`,
+          HttpStatus.BAD_REQUEST,
+        );
+
+      for (let i = 0; i < number_of_galleryids; i++) {
+        galleryids.push(data.readInt32BE(pos));
+        pos += 4;
+      }
+
+      return galleryids;
+    }
+
+    const res = await firstValueFrom(
+      this.httpService.get(url, {
+        responseType: 'arraybuffer',
+        headers: {
+          Range: `bytes=${offset}-${offset + BigInt(length - 1)}`,
+        },
+      }),
+    )
+      .then((x) => x.data as Buffer)
+      .then(decode);
 
     return res;
   }
