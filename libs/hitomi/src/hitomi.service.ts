@@ -220,7 +220,8 @@ export class HitomiService {
     const terms = query
       .split(' ')
       .map((x) => x.replace(/_/g, ' '))
-      .map((x) => x.trim());
+      .map((x) => x.trim())
+      .filter((x) => x);
     const positive = terms.filter((x) => !x.startsWith('-'));
     const negative = terms.filter((x) => x.startsWith('-'));
     let results =
