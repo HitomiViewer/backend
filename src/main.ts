@@ -4,9 +4,12 @@ import { NestFactory } from '@nestjs/core';
 import cookieParser from 'cookie-parser';
 import { AppModule } from './app.module';
 import { swagger } from './swagger';
+import { NextFunction, Request, Response } from 'express';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create(AppModule, {
+    logger: ['error', 'warn', 'log', 'debug', 'verbose'],
+  });
   const config = app.get(ConfigService);
 
   const servicePort = config.get<string>('PORT', '3000');
@@ -19,6 +22,12 @@ async function bootstrap() {
     credentials: config.get<boolean>('CORS_CREDENTIALS', true),
     preflightContinue: config.get<boolean>('CORS_PREFLIGHT', false),
     optionsSuccessStatus: config.get<number>('CORS_OPTIONS_STATUS', 204),
+  });
+
+  app.use((req: Request, res: Response, next: NextFunction) => {
+    res.header('X-Powered-By', 'NestJS');
+    Logger.log(`${req.method} ${req.url}`, 'Request');
+    next();
   });
 
   if (config.get<boolean>('SWAGGER_ENABLED', NODE_ENV === 'development')) {
