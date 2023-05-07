@@ -1,11 +1,44 @@
 import { HitomiLanguage, HitomiLanguages, HitomiService } from '@app/hitomi';
 import { Controller, Get, HttpException, Param, Query } from '@nestjs/common';
+import { ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 
 @Controller()
+@ApiTags('hitomi')
 export class AppController {
   constructor(private readonly hitomi: HitomiService) {}
 
   @Get()
+  @ApiQuery({
+    name: 'page',
+    type: Number,
+    required: false,
+    description: 'page number (entire data when not paged)',
+    schema: {
+      minimum: 1,
+      default: 1,
+    },
+  })
+  @ApiQuery({
+    name: 'language',
+    type: String,
+    enum: HitomiLanguages,
+    required: false,
+    description: 'language',
+    schema: {
+      default: 'all',
+    },
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'gallery ids',
+    schema: {
+      type: 'array',
+      items: {
+        type: 'number',
+      },
+      example: [2373351, 2373350, 2373349, 2373348, 2373347],
+    },
+  })
   async getIndex(
     @Query('page') page?: number,
     @Query('language') language: HitomiLanguage = 'all',

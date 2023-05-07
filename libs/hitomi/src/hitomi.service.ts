@@ -211,13 +211,18 @@ export class HitomiService {
     );
   }
 
+  private getFieldAndKeyFromQuery(query: string): [string, Buffer] {
+    if (query.includes(':'))
+      return [query.split(':')[0], hash(query.split(':')[1])];
+    return ['global', hash(query)];
+  }
+
   async getSuggestion(query: string) {
-    const field = 'global',
-      key = hash(query);
-    const node = await this.getNode(field);
-    const data = await this.BSearch(field, key, node);
+    const [field, key] = this.getFieldAndKeyFromQuery(query);
+    const node = await this.getNode(field as any);
+    const data = await this.BSearch(field as any, key, node);
     if (!data) return [];
-    const result = await this.getSuggestionWithData(data);
+    const result = await this.getSuggestionWithData(field as any, data);
     return result;
   }
 
@@ -354,7 +359,7 @@ export class HitomiService {
     const cached = await this.cache.get<BNode>(`${field}_${address}`);
     if (cached) return cached;
 
-    const indexDir = IndexOfField[field];
+    const indexDir = IndexOfField[field] ?? IndexOfField['global'];
     const indexVersion = await this.getIndexVersion(indexDir);
     const url = `https://${domain}/${indexDir}/${field}.${indexVersion}.index`;
 
@@ -408,9 +413,11 @@ export class HitomiService {
    * @param data data of node
    * @returns suggestion data
    */
-  private async getSuggestionWithData(data: BData) {
-    const field = 'global';
-    const indexDir = IndexOfField[field];
+  private async getSuggestionWithData(
+    field: 'global' | 'galleries' | 'languages' | 'nozomiurl',
+    data: BData,
+  ) {
+    const indexDir = IndexOfField[field] ?? IndexOfField['global'];
     const indexVersion = await this.getIndexVersion(indexDir);
     const url = `https://${domain}/${indexDir}/${field}.${indexVersion}.data`;
     const { offset, length } = data;
