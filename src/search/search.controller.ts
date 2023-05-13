@@ -51,7 +51,7 @@ export class SearchController {
   ): Promise<number[]> {
     if (page && page < 1)
       throw new HttpException('page must be greater than 0', 400);
-    if (!page) return await this.hitomi.getSearch(query);
+    if (!page) return await this.hitomi.getSearch(query, language as any);
     return await this.hitomi
       .getSearch(query)
       .then((x) => x.slice((page - 1) * 25, page * 25));

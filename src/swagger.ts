@@ -5,7 +5,7 @@ export async function swagger(app: INestApplication) {
   const config = new DocumentBuilder()
     .setTitle('API Document')
     .setDescription('REST API document')
-    .setVersion('2023.05.13')
+    .setVersion('2023.05.14')
     .addTag('REST')
     .build();
   const document = SwaggerModule.createDocument(app, config);
