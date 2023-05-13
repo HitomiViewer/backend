@@ -226,13 +226,19 @@ export class HitomiService {
     return result;
   }
 
-  async getSearch(query: string) {
+  async getSearch(query: string, language: HitomiLanguage = 'all') {
     const terms = query
       .split(' ')
       .map((x) => x.replace(/_/g, ' '))
       .map((x) => x.trim())
       .filter((x) => x);
     const positive = terms.filter((x) => !x.startsWith('-'));
+    if (
+      !positive.some((x) => x.startsWith('language:')) &&
+      language !== 'all'
+    ) {
+      positive.push(`language:${language}`);
+    }
     const negative = terms.filter((x) => x.startsWith('-'));
     let results =
       (positive.length > 0

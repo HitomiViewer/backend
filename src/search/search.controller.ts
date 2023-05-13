@@ -27,6 +27,12 @@ export class SearchController {
       default: 1,
     },
   })
+  @ApiQuery({
+    name: 'language',
+    type: String,
+    required: false,
+    description: 'default language (all when not specified)',
+  })
   @ApiOkResponse({
     status: 200,
     description: 'gallery ids',
@@ -38,7 +44,11 @@ export class SearchController {
       example: [2545347, 2545313, 2545300, 2545225, 2544654],
     },
   })
-  async getSearch(@Query('query') query: string, @Query('page') page?: number) {
+  async getSearch(
+    @Query('query') query: string,
+    @Query('page') page?: number,
+    @Query('language') language?: string,
+  ): Promise<number[]> {
     if (page && page < 1)
       throw new HttpException('page must be greater than 0', 400);
     if (!page) return await this.hitomi.getSearch(query);
