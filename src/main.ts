@@ -14,7 +14,7 @@ async function bootstrap() {
   const config = app.get(ConfigService);
 
   const servicePort = config.get<string>('PORT', '3000');
-  const NODE_ENV = config.get<string>('NODE_ENV', 'development');
+  const NODE_ENV = config.get<string>('NODE_ENV', 'production');
 
   app.use(cookieParser());
   app.enableCors({
@@ -25,11 +25,13 @@ async function bootstrap() {
     optionsSuccessStatus: config.get<number>('CORS_OPTIONS_STATUS', 204),
   });
 
-  app.use((req: Request, res: Response, next: NextFunction) => {
-    res.header('X-Powered-By', 'NestJS');
-    Logger.debug(`${req.method} ${req.url}`, 'Request');
-    next();
-  });
+  if (NODE_ENV === 'development') {
+    app.use((req: Request, res: Response, next: NextFunction) => {
+      res.header('X-Powered-By', 'NestJS');
+      Logger.debug(`${req.method} ${req.url}`, 'Request');
+      next();
+    });
+  }
 
   if (config.get<boolean>('TRUST_PROXY', false)) {
     app.set('trust proxy', 1);
