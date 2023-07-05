@@ -11,3 +11,5 @@ services:
       - PORT=3000
     ports:
       - 9496:3000
+    extra_hosts:
+      - host.docker.internal:host-gateway

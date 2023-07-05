@@ -10,6 +10,7 @@ import { SearchModule } from './search/search.module';
 import ms from 'ms';
 import { AdminJSModule } from './admin.module';
 import { DatabaseModule } from './database.module';
+import { LogModule } from './log/log.module';
 
 const DEFAULT_ADMIN = {
   email: 'admin@example.com',
@@ -40,6 +41,7 @@ const authenticate = async (email: string, password: string) => {
     DetailModule,
     ImagesModule,
     SearchModule,
+    LogModule,
   ],
   controllers: [AppController],
   providers: [
