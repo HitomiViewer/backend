@@ -1,4 +1,10 @@
-import { BaseEntity, Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  BaseEntity,
+  Column,
+  CreateDateColumn,
+  Entity,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
 
 @Entity('log')
 export class LogEntity extends BaseEntity {
@@ -10,4 +16,7 @@ export class LogEntity extends BaseEntity {
 
   @Column('int', { name: 'id_hitomi', nullable: true, unsigned: true })
   idHitomi?: number;
+
+  @CreateDateColumn({ name: 'created_at' })
+  createdAt!: Date;
 }
