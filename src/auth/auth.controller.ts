@@ -92,6 +92,7 @@ export class AuthController {
       }),
     );
 
+    res.cookie(REFRESH_TOKEN_KEY, refreshToken, REFRESH_TOKEN_OPTION());
     res.send({
       accessToken: await this.authService.generateAccessToken(req.user),
       refreshToken,
@@ -117,6 +118,7 @@ export class AuthController {
     const user = await this.authService.signup(dto);
     const refreshToken = await this.authService.generateRefreshToken(user);
 
+    res.cookie(REFRESH_TOKEN_KEY, refreshToken, REFRESH_TOKEN_OPTION());
     res.send({
       accessToken: await this.authService.generateAccessToken(user),
       refreshToken,
