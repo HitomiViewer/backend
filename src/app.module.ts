@@ -1,4 +1,9 @@
-import { CacheInterceptor, CacheModule, Module } from '@nestjs/common';
+import {
+  CacheInterceptor,
+  CacheModule,
+  ClassSerializerInterceptor,
+  Module,
+} from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { APP_INTERCEPTOR } from '@nestjs/core';
 import { AdminModule } from '@adminjs/nestjs';
@@ -52,6 +57,10 @@ const authenticate = async (email: string, password: string) => {
     {
       provide: APP_INTERCEPTOR,
       useClass: CacheInterceptor,
+    },
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: ClassSerializerInterceptor,
     },
   ],
 })

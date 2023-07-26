@@ -27,13 +27,20 @@ export class AuthService {
   }
 
   async generateAccessToken(user: Express.User) {
-    return this.jwtService.signAsync({ id: user.id });
+    return this.jwtService.signAsync(
+      { id: user.id },
+      {
+        secret: this.configService.get<string>('ACCESS_TOKEN_SECRET'),
+        expiresIn: this.configService.get<string>('ACCESS_TOKEN_EXPIRES_IN'),
+      },
+    );
   }
 
   async generateRefreshToken(user: Express.User) {
     const token = await this.jwtService.signAsync(
       { id: user.id },
       {
+        secret: this.configService.get<string>('REFRESH_TOKEN_SECRET'),
         expiresIn: this.configService.get<string>('REFRESH_TOKEN_EXPIRES_IN'),
       },
     );

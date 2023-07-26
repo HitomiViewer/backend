@@ -15,10 +15,7 @@ import { RefreshStrategy } from './strategies/refresh.strategy';
     JwtModule.registerAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
-      useFactory: (config: ConfigService) => ({
-        secretOrPrivateKey: config.get('JWT_SECRET'),
-        signOptions: { expiresIn: config.get('ACCESS_TOKEN_EXPIRES_IN') },
-      }),
+      useFactory: (config: ConfigService) => ({}),
     }),
     TypeOrmModule.forFeature([UserEntity, LogEntity]),
   ],
