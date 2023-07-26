@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { AuthController } from './auth.controller';
-import { JwtModule } from '@nestjs/jwt';
+import { JwtModule, JwtService } from '@nestjs/jwt';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { UserEntity } from './entities/user.entity';
@@ -20,6 +20,12 @@ import { RefreshStrategy } from './strategies/refresh.strategy';
     TypeOrmModule.forFeature([UserEntity, LogEntity]),
   ],
   controllers: [AuthController],
-  providers: [AuthService, AccessStrategy, LoginStrategy, RefreshStrategy],
+  providers: [
+    AuthService,
+    JwtService,
+    AccessStrategy,
+    LoginStrategy,
+    RefreshStrategy,
+  ],
 })
 export class AuthModule {}

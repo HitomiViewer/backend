@@ -27,6 +27,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { LogEntity, LogType } from 'src/log/log.entity';
 import { Repository } from 'typeorm';
 import { SignUpDto } from './dto/sign-up.dto';
+import { JwtService } from '@nestjs/jwt';
 
 @Controller('auth')
 @ApiTags('auth')
@@ -34,6 +35,7 @@ export class AuthController {
   constructor(
     private readonly config: ConfigService,
     private readonly authService: AuthService,
+    private readonly jwtService: JwtService,
     @InjectRepository(LogEntity)
     private readonly logRepository: Repository<LogEntity>,
   ) {}
@@ -148,5 +150,23 @@ export class AuthController {
       throw new HttpException('Unauthorized', HttpStatus.UNAUTHORIZED);
     }
     return await this.authService.generateAccessToken(req.user);
+  }
+
+  @Post('/refresh/app')
+  async refreshApp(@Body() dto: { refreshToken: string }) {
+    const id = (this.jwtService.decode(dto.refreshToken) as any)?.['id'];
+    if (!id) {
+      throw new HttpException('Unauthorized', HttpStatus.UNAUTHORIZED);
+    }
+    const user = await this.authService.getUserWithValidateToken(
+      id,
+      dto.refreshToken,
+    );
+    if (!user) {
+      throw new HttpException('Unauthorized', HttpStatus.UNAUTHORIZED);
+    }
+    return {
+      accessToken: await this.authService.generateAccessToken(user),
+    };
   }
 }
