@@ -165,8 +165,6 @@ export class AuthController {
     if (!user) {
       throw new HttpException('Unauthorized', HttpStatus.UNAUTHORIZED);
     }
-    return {
-      accessToken: await this.authService.generateAccessToken(user),
-    };
+    return await this.authService.generateAccessToken(user);
   }
 }
