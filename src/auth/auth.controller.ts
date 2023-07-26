@@ -74,6 +74,30 @@ export class AuthController {
     res.send(await this.authService.generateAccessToken(req.user));
   }
 
+  @Post('/signin/app')
+  @ApiBody({
+    type: SignInDto,
+  })
+  @UseGuards(LoginGuard)
+  async signinApp(@Req() req: Request, @Res() res: Response) {
+    if (!req.user) {
+      throw new HttpException('Unauthorized', HttpStatus.UNAUTHORIZED);
+    }
+    const refreshToken = await this.authService.generateRefreshToken(req.user);
+    await this.logRepository.insert(
+      this.logRepository.create({
+        ip: req.ip,
+        type: LogType.LOGIN,
+        user: req.user,
+      }),
+    );
+
+    res.send({
+      accessToken: await this.authService.generateAccessToken(req.user),
+      refreshToken,
+    });
+  }
+
   @Post('/signup')
   async signup(@Body() dto: SignUpDto, @Res() res: Response) {
     const user = await this.authService.signup(dto);
@@ -86,6 +110,17 @@ export class AuthController {
 
     res.cookie(REFRESH_TOKEN_KEY, refreshToken, REFRESH_TOKEN_OPTION());
     res.send(await this.authService.generateAccessToken(user));
+  }
+
+  @Post('/signup/app')
+  async signupApp(@Body() dto: SignUpDto, @Res() res: Response) {
+    const user = await this.authService.signup(dto);
+    const refreshToken = await this.authService.generateRefreshToken(user);
+
+    res.send({
+      accessToken: await this.authService.generateAccessToken(user),
+      refreshToken,
+    });
   }
 
   @Get('/logout')
