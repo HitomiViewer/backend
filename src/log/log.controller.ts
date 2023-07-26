@@ -15,7 +15,7 @@ export class LogController {
     await this.logRepository.insert(
       this.logRepository.create({
         type: LogType.READ,
-        ip: req.headers['x-forwarded-for'] as string,
+        ip: req.ip,
         idHitomi: id,
       }),
     );
