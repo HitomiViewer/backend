@@ -4,6 +4,8 @@ import { Module } from '@nestjs/common';
 import { AdminModule } from '@adminjs/nestjs';
 import { LogEntity } from './log/log.entity';
 import { UserEntity } from './auth/entities/user.entity';
+import { UserModule } from './user/user.module';
+import { Favorite } from './user/entity/favorite.entity';
 
 AdminJS.registerAdapter(AdminJSTypeorm);
 
@@ -25,7 +27,7 @@ const authenticate = async (email: string, password: string) => {
       useFactory: async () => ({
         adminJsOptions: {
           rootPath: '/admin',
-          resources: [LogEntity, UserEntity],
+          resources: [LogEntity, UserEntity, Favorite],
         },
         auth: {
           authenticate,
@@ -39,6 +41,7 @@ const authenticate = async (email: string, password: string) => {
         },
       }),
     }),
+    UserModule,
   ],
 })
 export class AdminJSModule {}

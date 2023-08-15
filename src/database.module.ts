@@ -3,6 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { LogEntity } from './log/log.entity';
 import { UserEntity } from './auth/entities/user.entity';
+import { Favorite } from './user/entity/favorite.entity';
 
 @Module({
   imports: [
@@ -14,7 +15,7 @@ import { UserEntity } from './auth/entities/user.entity';
         database: config.get<string>('DB_NAME'),
         username: config.get<string>('DB_USERNAME'),
         password: config.get<string>('DB_PASSWORD'),
-        entities: [LogEntity, UserEntity],
+        entities: [LogEntity, UserEntity, Favorite],
         migrations: [],
         subscribers: [],
         synchronize: true,
