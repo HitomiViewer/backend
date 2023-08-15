@@ -13,7 +13,6 @@ export class UserService {
   async getFavorites(userId: string): Promise<Favorite | null> {
     return await this.favoriteRepository.findOne({
       where: { user: { id: userId } },
-      relations: ['user'],
     });
   }
 
@@ -22,6 +21,14 @@ export class UserService {
       user: { id: userId },
       favorites,
     });
-    await this.favoriteRepository.save(favorite);
+    const existingFavorite = await this.favoriteRepository.findOne({
+      where: { user: { id: userId } },
+      relations: ['user'],
+    });
+    if (existingFavorite) {
+      await this.favoriteRepository.update(existingFavorite.id, favorite);
+      return;
+    }
+    await this.favoriteRepository.insert(favorite);
   }
 }

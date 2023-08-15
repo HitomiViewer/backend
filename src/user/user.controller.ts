@@ -12,8 +12,10 @@ import { UserService } from './user.service';
 import { AccessGuard } from 'src/auth/guards/access.guard';
 import { CreateFavoriteDto } from './dto/create-favorite.dto';
 import { Request } from 'express';
+import { ApiBearerAuth } from '@nestjs/swagger';
 
 @Controller('user')
+@ApiBearerAuth()
 @UseGuards(AccessGuard)
 export class UserController {
   constructor(private readonly userService: UserService) {}
