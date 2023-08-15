@@ -1,4 +1,4 @@
-import { Logger } from '@nestjs/common';
+import { Logger, ValidationPipe } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
 import cookieParser from 'cookie-parser';
@@ -26,6 +26,13 @@ async function bootstrap() {
     preflightContinue: config.get<boolean>('CORS_PREFLIGHT', false),
     optionsSuccessStatus: config.get<number>('CORS_OPTIONS_STATUS', 204),
   });
+
+  app.useGlobalPipes(
+    new ValidationPipe({
+      whitelist: true,
+      transform: true,
+    }),
+  );
 
   if (NODE_ENV === 'development') {
     app.use((req: Request, res: Response, next: NextFunction) => {
