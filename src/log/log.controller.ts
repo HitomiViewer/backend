@@ -19,5 +19,6 @@ export class LogController {
         idHitomi: id,
       }),
     );
+    return { success: true };
   }
 }
