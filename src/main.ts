@@ -1,4 +1,9 @@
-import { Logger, ValidationPipe } from '@nestjs/common';
+import {
+  Logger,
+  VERSION_NEUTRAL,
+  ValidationPipe,
+  VersioningType,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
 import cookieParser from 'cookie-parser';
@@ -25,6 +30,11 @@ async function bootstrap() {
     credentials: config.get<boolean>('CORS_CREDENTIALS', true),
     preflightContinue: config.get<boolean>('CORS_PREFLIGHT', false),
     optionsSuccessStatus: config.get<number>('CORS_OPTIONS_STATUS', 204),
+  });
+  app.enableVersioning({
+    type: VersioningType.URI,
+    prefix: config.get<string>('VERSIONING_PREFIX', 'v'),
+    defaultVersion: VERSION_NEUTRAL,
   });
 
   app.useGlobalPipes(
