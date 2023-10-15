@@ -1,6 +1,13 @@
 version: '2.0'
 
 services:
+  warproxy:
+    image: ghcr.io/toshu-company/warproxy:latest
+    restart: always
+    environment:
+      - WARP_PLUS=true
+    expose:
+      - 1080
   server:
     build:
       context: .
@@ -12,6 +19,7 @@ services:
     ports:
       - 9496:3000
     networks:
+      - default
       - database
     extra_hosts:
       - host.docker.internal:host-gateway
