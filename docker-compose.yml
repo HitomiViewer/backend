@@ -11,5 +11,12 @@ services:
       - PORT=3000
     ports:
       - 9496:3000
+    networks:
+      - database
     extra_hosts:
       - host.docker.internal:host-gateway
+
+networks:
+  database:
+    name: database
+    external: true
